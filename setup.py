@@ -16,7 +16,7 @@ ext_modules = [
 
 setuptools.setup(
     name="mintimegrad",
-    version="0.0.1",
+    version="0.0.2",
     author="Kwang Eun Jang",
     author_email="kejang@stanford.edu",
     description="Python Wrapper of Miki Lustig's tOptGrad",
