@@ -34,7 +34,7 @@ setuptools.setup(
     packages=setuptools.find_packages(where="."),
     python_requires=">=3.7",
     install_requires=[
-        "numpy",
+        "numpy >= 1.17.3",
         "pybind11 >=2.6.0",
     ],
     ext_modules=ext_modules,
