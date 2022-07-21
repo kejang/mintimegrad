@@ -27,7 +27,9 @@ setuptools.setup(
         "Bug Tracker": "https://github.com/kejang/mintimegrad/issues",
     },
     classifiers=[
-        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "Operating System :: POSIX :: Linux",
     ],
     package_dir={"": "."},
