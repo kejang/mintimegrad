@@ -1,10 +1,17 @@
 import setuptools
+import os
+from pathlib import Path
 from pybind11.setup_helpers import Pybind11Extension, build_ext
+
+module_path = Path(os.path.abspath(__file__)).parent.absolute()
+
+ver = {}
+with open(module_path.joinpath('version.py')) as ver_file:
+    exec(ver_file.read(), ver)
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
-import os
 base_path = os.path.dirname(__file__)
 
 ext_modules = [
@@ -16,7 +23,7 @@ ext_modules = [
 
 setuptools.setup(
     name="mintimegrad",
-    version="0.0.3",
+    version=ver['__version__'],
     author="Kwang Eun Jang",
     author_email="kejang@stanford.edu",
     description="Python Wrapper of Miki Lustig's tOptGrad",

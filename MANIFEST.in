@@ -1,2 +1,3 @@
 include mintimegrad/*.c
 include mintimegrad/*.h
+include version.py
