@@ -219,7 +219,7 @@ int riv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z
     double *a2x = double_malloc_check(num_evals * sizeof(double));
     double *a3x = double_malloc_check(num_evals * sizeof(double));
 
-    double sop_num[num_evals];
+    double *sop_num = double_malloc_check(num_evals * sizeof(double));
     for (int i = 0; i < num_evals; i++)
     {
         sop_num[i] = i * dp;
@@ -237,6 +237,7 @@ int riv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z
     free(a2x);
     free(a3x);
     free(s_of_p);
+    free(sop_num);
 
     int size_p_of_s = half_ls / 2;
 
