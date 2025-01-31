@@ -100,8 +100,7 @@ int riv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z
 
     /* Representing the curve with parameter p */
 
-    double p[Lp];
-
+    double *p = double_malloc_check(Lp * sizeof(double));
     for (int i = 0; i < Lp; i++)
     {
         p[i] = i;
@@ -113,21 +112,17 @@ int riv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z
     /* Interpolation of curve for gradient accuracy, using cubic spline
        interpolation */
 
-    double *c1x, *c2x, *c3x,
-        *c1y, *c2y, *c3y,
-        *c1z, *c2z, *c3z; /* storage for spline coefficients */
+    double *c1z = double_malloc_check(Lp * sizeof(double));
+    double *c2z = double_malloc_check(Lp * sizeof(double));
+    double *c3z = double_malloc_check(Lp * sizeof(double));
 
-    c1z = double_malloc_check(Lp * sizeof(double));
-    c2z = double_malloc_check(Lp * sizeof(double));
-    c3z = double_malloc_check(Lp * sizeof(double));
+    double *c1x = double_malloc_check(Lp * sizeof(double));
+    double *c2x = double_malloc_check(Lp * sizeof(double));
+    double *c3x = double_malloc_check(Lp * sizeof(double));
 
-    c1x = double_malloc_check(Lp * sizeof(double));
-    c2x = double_malloc_check(Lp * sizeof(double));
-    c3x = double_malloc_check(Lp * sizeof(double));
-
-    c1y = double_malloc_check(Lp * sizeof(double));
-    c2y = double_malloc_check(Lp * sizeof(double));
-    c3y = double_malloc_check(Lp * sizeof(double));
+    double *c1y = double_malloc_check(Lp * sizeof(double));
+    double *c2y = double_malloc_check(Lp * sizeof(double));
+    double *c3y = double_malloc_check(Lp * sizeof(double));
 
     spline(Lp, 0, 0, 1, 1, p, x, c1x, c2x, c3x, iflag);
     spline(Lp, 0, 0, 1, 1, p, y, c1y, c2y, c3y, iflag);
@@ -136,10 +131,9 @@ int riv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z
     double dp = 0.1;
     int num_evals = (int)floor((Lp - 1) / dp) + 1;
 
-    double *CCx, *CCy, *CCz;
-    CCx = double_malloc_check(num_evals * sizeof(double));
-    CCy = double_malloc_check(num_evals * sizeof(double));
-    CCz = double_malloc_check(num_evals * sizeof(double));
+    double *CCx = double_malloc_check(num_evals * sizeof(double));
+    double *CCy = double_malloc_check(num_evals * sizeof(double));
+    double *CCz = double_malloc_check(num_evals * sizeof(double));
 
     double toeval = 0;
 
@@ -149,11 +143,10 @@ int riv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z
 
     /* interpolated curve in p-parameterization */
 
-    double *Cpx, *Cpy, *Cp_abs, *Cpz;
-    Cpx = double_malloc_check(num_evals * sizeof(double));
-    Cpy = double_malloc_check(num_evals * sizeof(double));
-    Cpz = double_malloc_check(num_evals * sizeof(double));
-    Cp_abs = double_malloc_check(num_evals * sizeof(double));
+    double *Cpx = double_malloc_check(num_evals * sizeof(double));
+    double *Cpy = double_malloc_check(num_evals * sizeof(double));
+    double *Cpz = double_malloc_check(num_evals * sizeof(double));
+    double *Cp_abs = double_malloc_check(num_evals * sizeof(double));
 
     for (int i = 0; i < num_evals; i++)
     {
@@ -173,8 +166,7 @@ int riv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z
     /* converting to arc-length parameterization from p, using trapezoidal
        integration */
 
-    double *s_of_p;
-    s_of_p = double_malloc_check(num_evals * sizeof(double));
+    double *s_of_p = double_malloc_check(num_evals * sizeof(double));
     s_of_p[0] = 0;
 
     double sofar = 0;
@@ -203,15 +195,9 @@ int riv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z
     int length_of_s = (int)floor(L / ds);
     int half_ls = (int)floor(L / (ds / 2));
 
-    double *s;
-    s = double_malloc_check(length_of_s * sizeof(double));
-
-    double *sta;
-    sta = double_malloc_check(length_of_s * sizeof(double));
-
-    double *stb;
-    stb = double_malloc_check(length_of_s * sizeof(double));
-
+    double *s = double_malloc_check(length_of_s * sizeof(double));
+    double *sta = double_malloc_check(length_of_s * sizeof(double));
+    double *stb = double_malloc_check(length_of_s * sizeof(double));
     for (int i = 0; i < length_of_s; i++)
     {
         s[i] = i * ds;
@@ -219,23 +205,19 @@ int riv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z
         stb[i] = 0;
     }
 
-    double *s_half;
-    s_half = double_malloc_check(half_ls * sizeof(double));
-
+    double *s_half = double_malloc_check(half_ls * sizeof(double));
     for (int i = 0; i < half_ls; i++)
     {
         s_half[i] = (double)i * (ds / 2);
     }
 
-    double *p_of_s_half;
-    p_of_s_half = double_malloc_check(half_ls * sizeof(double));
+    double *p_of_s_half = double_malloc_check(half_ls * sizeof(double));
 
     /* Convert from s(p) to p(s) and interpolate for accuracy */
 
-    double *a1x, *a2x, *a3x;
-    a1x = double_malloc_check(num_evals * sizeof(double));
-    a2x = double_malloc_check(num_evals * sizeof(double));
-    a3x = double_malloc_check(num_evals * sizeof(double));
+    double *a1x = double_malloc_check(num_evals * sizeof(double));
+    double *a2x = double_malloc_check(num_evals * sizeof(double));
+    double *a3x = double_malloc_check(num_evals * sizeof(double));
 
     double sop_num[num_evals];
     for (int i = 0; i < num_evals; i++)
@@ -258,9 +240,7 @@ int riv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z
 
     int size_p_of_s = half_ls / 2;
 
-    double *p_of_s;
-    p_of_s = double_malloc_check(size_p_of_s * sizeof(double));
-
+    double *p_of_s = double_malloc_check(size_p_of_s * sizeof(double));
     for (int i = 0; i < size_p_of_s; i++)
     {
         p_of_s[i] = p_of_s_half[2 * i];
@@ -268,15 +248,12 @@ int riv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z
 
     free(p_of_s_half);
 
-    double *k; /* curvature along the curve */
-    k = double_malloc_check(half_ls * sizeof(double));
-
-    double *Cspx, *Cspy, *Cspz;
+    double *k = double_malloc_check(half_ls * sizeof(double)); /* curvature along the curve */
 
     /* Csp is C(s(p)) = [Cx(p(s)) Cy(p(s)) Cz(p(s))] */
-    Cspx = double_malloc_check(length_of_s * sizeof(double));
-    Cspy = double_malloc_check(length_of_s * sizeof(double));
-    Cspz = double_malloc_check(length_of_s * sizeof(double));
+    double *Cspx = double_malloc_check(length_of_s * sizeof(double));
+    double *Cspy = double_malloc_check(length_of_s * sizeof(double));
+    double *Cspz = double_malloc_check(length_of_s * sizeof(double));
 
     for (int i = 0; i < length_of_s; i++)
     {
@@ -285,19 +262,15 @@ int riv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z
         Cspz[i] = seval(Lp, p_of_s[i], p, z, c1z, c2z, c3z, last);
     }
 
-    double *Csp1x, *Csp2x, *Csp3x,
-        *Csp1y, *Csp2y, *Csp3y,
-        *Csp1z, *Csp2z, *Csp3z; /* storage for spline coefficients. */
-
-    Csp1x = double_malloc_check(length_of_s * sizeof(double));
-    Csp2x = double_malloc_check(length_of_s * sizeof(double));
-    Csp3x = double_malloc_check(length_of_s * sizeof(double));
-    Csp1y = double_malloc_check(length_of_s * sizeof(double));
-    Csp2y = double_malloc_check(length_of_s * sizeof(double));
-    Csp3y = double_malloc_check(length_of_s * sizeof(double));
-    Csp1z = double_malloc_check(length_of_s * sizeof(double));
-    Csp2z = double_malloc_check(length_of_s * sizeof(double));
-    Csp3z = double_malloc_check(length_of_s * sizeof(double));
+    double *Csp1x = double_malloc_check(length_of_s * sizeof(double));
+    double *Csp2x = double_malloc_check(length_of_s * sizeof(double));
+    double *Csp3x = double_malloc_check(length_of_s * sizeof(double));
+    double *Csp1y = double_malloc_check(length_of_s * sizeof(double));
+    double *Csp2y = double_malloc_check(length_of_s * sizeof(double));
+    double *Csp3y = double_malloc_check(length_of_s * sizeof(double));
+    double *Csp1z = double_malloc_check(length_of_s * sizeof(double));
+    double *Csp2z = double_malloc_check(length_of_s * sizeof(double));
+    double *Csp3z = double_malloc_check(length_of_s * sizeof(double));
 
     spline(length_of_s, 0, 0, 1, 1, s, Cspx, Csp1x, Csp2x, Csp3x, iflag);
     spline(length_of_s, 0, 0, 1, 1, s, Cspy, Csp1y, Csp2y, Csp3y, iflag);
@@ -340,11 +313,9 @@ int riv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z
 
     /* computing geomtry dependent constraints (forbidden line curve) */
 
-    double *sdot1, *sdot2, *sdot;
-
-    sdot1 = double_malloc_check(half_ls * sizeof(double));
-    sdot2 = double_malloc_check(half_ls * sizeof(double));
-    sdot = double_malloc_check(half_ls * sizeof(double));
+    double *sdot1 = double_malloc_check(half_ls * sizeof(double));
+    double *sdot2 = double_malloc_check(half_ls * sizeof(double));
+    double *sdot = double_malloc_check(half_ls * sizeof(double));
 
     /* Calculating the upper bound for the time parametrization */
     /* sdot (which is a non scaled max gradient constaint) as a function of s. */
@@ -369,8 +340,7 @@ int riv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z
 
     int size_k2 = half_ls + 2; /* extend of k for RK4 */
 
-    double *k2;
-    k2 = double_malloc_check(size_k2 * sizeof(double));
+    double *k2 = double_malloc_check(size_k2 * sizeof(double));
     for (int i = 0; i < half_ls; i++)
     {
         k2[i] = k[i];
@@ -466,9 +436,8 @@ int riv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z
     free(sdot);
 
     /* take st(s) to be the minimum of the curves sta and stb */
-    double *st_of_s, *st_ds_i;
-    st_of_s = double_malloc_check(length_of_s * sizeof(double));
-    st_ds_i = double_malloc_check(length_of_s * sizeof(double));
+    double *st_of_s = double_malloc_check(length_of_s * sizeof(double));
+    double *st_ds_i = double_malloc_check(length_of_s * sizeof(double));
 
     for (int i = 0; i < length_of_s; i++)
     {
@@ -493,8 +462,7 @@ int riv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z
 
     /* Converting to the time parameterization, t(s) using trapezoidal
        integration. t(s) = integral (1/st) ds */
-    double *t_of_s;
-    t_of_s = double_malloc_check(length_of_s * sizeof(double));
+    double *t_of_s = double_malloc_check(length_of_s * sizeof(double));
 
     t_of_s[0] = 0;
     for (int i = 1; i < length_of_s; i++)
@@ -506,21 +474,19 @@ int riv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z
 
     int l_t = (int)floor(t_of_s[length_of_s - 1] / dt);
 
-    double t[l_t];
+    double *t = double_malloc_check(l_t * sizeof(double));
     for (int i = 0; i < l_t; i++)
     {
         t[i] = i * dt; /* time array */
     }
 
-    double *t1x, *t2x, *t3x; /* coefficient arrays for spline interpolation
-                                of t(s) to get s(t) */
+    /* coefficient arrays for spline interpolation of t(s) to get s(t) */
 
-    t1x = double_malloc_check(length_of_s * sizeof(double));
-    t2x = double_malloc_check(length_of_s * sizeof(double));
-    t3x = double_malloc_check(length_of_s * sizeof(double));
+    double *t1x = double_malloc_check(length_of_s * sizeof(double));
+    double *t2x = double_malloc_check(length_of_s * sizeof(double));
+    double *t3x = double_malloc_check(length_of_s * sizeof(double));
 
-    double *s_of_t;
-    s_of_t = double_malloc_check(l_t * sizeof(double));
+    double *s_of_t = double_malloc_check(l_t * sizeof(double));
 
     spline(length_of_s, 0, 0, 1, 1, t_of_s, s, t1x, t2x, t3x, iflag);
 
@@ -533,18 +499,16 @@ int riv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z
     free(t2x);
     free(t3x);
     free(t_of_s);
+    free(t);
 
-    double *p1x, *p2x, *p3x; /* coefficient arrays for spline interpolation
-                                of p(s) with s(t) to get p(s(t)) = p(t) */
-    p1x = double_malloc_check(length_of_s * sizeof(double));
-    p2x = double_malloc_check(length_of_s * sizeof(double));
-    p3x = double_malloc_check(length_of_s * sizeof(double));
+    /* coefficient arrays for spline interpolation of p(s) with s(t) to get p(s(t)) = p(t) */
+    double *p1x = double_malloc_check(length_of_s * sizeof(double));
+    double *p2x = double_malloc_check(length_of_s * sizeof(double));
+    double *p3x = double_malloc_check(length_of_s * sizeof(double));
 
     spline(length_of_s, 0, 0, 1, 1, s, p_of_s, p1x, p2x, p3x, iflag);
 
-    double *p_of_t;
-    p_of_t = double_malloc_check(l_t * sizeof(double));
-
+    double *p_of_t = double_malloc_check(l_t * sizeof(double));
     for (int i = 0; i < l_t; i++)
     {
         p_of_t[i] = seval(length_of_s, s_of_t[i], s, p_of_s, p1x, p2x, p3x,
@@ -571,6 +535,7 @@ int riv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z
         (*Cz)[i] = seval(Lp, p_of_t[i], p, z, c1z, c2z, c3z, last);
     }
 
+    free(p);
     free(p_of_t);
     free(c1x);
     free(c2x);
@@ -596,7 +561,7 @@ int rv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z,
 
     /* Representing the curve with parameter p */
 
-    double p[Lp];
+    double *p = double_malloc_check(Lp * sizeof(double));
     for (int i = 0; i < Lp; i++)
     {
         p[i] = i;
@@ -607,19 +572,16 @@ int rv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z,
 
     /* Interpolation of curve in p-parameterization for gradient accuracy,
        using cubic spline interpolation */
-    double *c1x, *c2x, *c3x,
-        *c1y, *c2y, *c3y,
-        *c1z, *c2z, *c3z; /* storage for spline coefficients */
 
-    c1z = double_malloc_check(Lp * sizeof(double));
-    c2z = double_malloc_check(Lp * sizeof(double));
-    c3z = double_malloc_check(Lp * sizeof(double));
-    c1x = double_malloc_check(Lp * sizeof(double));
-    c2x = double_malloc_check(Lp * sizeof(double));
-    c3x = double_malloc_check(Lp * sizeof(double));
-    c1y = double_malloc_check(Lp * sizeof(double));
-    c2y = double_malloc_check(Lp * sizeof(double));
-    c3y = double_malloc_check(Lp * sizeof(double));
+    double *c1z = double_malloc_check(Lp * sizeof(double));
+    double *c2z = double_malloc_check(Lp * sizeof(double));
+    double *c3z = double_malloc_check(Lp * sizeof(double));
+    double *c1x = double_malloc_check(Lp * sizeof(double));
+    double *c2x = double_malloc_check(Lp * sizeof(double));
+    double *c3x = double_malloc_check(Lp * sizeof(double));
+    double *c1y = double_malloc_check(Lp * sizeof(double));
+    double *c2y = double_malloc_check(Lp * sizeof(double));
+    double *c3y = double_malloc_check(Lp * sizeof(double));
 
     spline(Lp, 0, 0, 1, 1, p, x, c1x, c2x, c3x, iflag);
     spline(Lp, 0, 0, 1, 1, p, y, c1y, c2y, c3y, iflag);
@@ -628,10 +590,9 @@ int rv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z,
     double dp = 0.1;
     int num_evals = (int)floor((Lp - 1) / dp) + 1;
 
-    double *CCx, *CCy, *CCz;
-    CCx = double_malloc_check(num_evals * sizeof(double));
-    CCy = double_malloc_check(num_evals * sizeof(double));
-    CCz = double_malloc_check(num_evals * sizeof(double));
+    double *CCx = double_malloc_check(num_evals * sizeof(double));
+    double *CCy = double_malloc_check(num_evals * sizeof(double));
+    double *CCz = double_malloc_check(num_evals * sizeof(double));
 
     double toeval = 0; /* used by spline eval function, seval */
 
@@ -641,11 +602,10 @@ int rv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z,
 
     /* interpolated curve in p-parameterization */
 
-    double *Cpx, *Cpy, *Cp_abs, *Cpz;
-    Cpx = double_malloc_check(num_evals * sizeof(double));
-    Cpy = double_malloc_check(num_evals * sizeof(double));
-    Cpz = double_malloc_check(num_evals * sizeof(double));
-    Cp_abs = double_malloc_check(num_evals * sizeof(double));
+    double *Cpx = double_malloc_check(num_evals * sizeof(double));
+    double *Cpy = double_malloc_check(num_evals * sizeof(double));
+    double *Cpz = double_malloc_check(num_evals * sizeof(double));
+    double *Cp_abs = double_malloc_check(num_evals * sizeof(double));
 
     for (int i = 0; i < num_evals; i++)
     {
@@ -668,8 +628,7 @@ int rv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z,
     /* converting to arc-length parameterization from p, using trapezoidal
        integration */
 
-    double *s_of_p;
-    s_of_p = double_malloc_check(num_evals * sizeof(double));
+    double *s_of_p = double_malloc_check(num_evals * sizeof(double));
     s_of_p[0] = 0;
 
     double sofar = 0;
@@ -698,33 +657,29 @@ int rv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z,
     int length_of_s = (int)floor(L / ds);
     int half_ls = (int)floor(L / (ds / 2));
 
-    double *s;
-    s = double_malloc_check(length_of_s * sizeof(double));
+    double *s = double_malloc_check(length_of_s * sizeof(double));
 
     for (int i = 0; i < length_of_s; i++)
     {
         s[i] = i * ds;
     }
 
-    double *s_half;
-    s_half = double_malloc_check(half_ls * sizeof(double));
+    double *s_half = double_malloc_check(half_ls * sizeof(double));
 
     for (int i = 0; i < half_ls; i++)
     {
         s_half[i] = (double)i * (ds / 2);
     }
 
-    double *p_of_s_half;
-    p_of_s_half = double_malloc_check(half_ls * sizeof(double));
+    double *p_of_s_half = double_malloc_check(half_ls * sizeof(double));
 
     /* Convert from s(p) to p(s) and interpolate for accuracy */
 
-    double *a1x, *a2x, *a3x;
-    a1x = double_malloc_check(num_evals * sizeof(double));
-    a2x = double_malloc_check(num_evals * sizeof(double));
-    a3x = double_malloc_check(num_evals * sizeof(double));
+    double *a1x = double_malloc_check(num_evals * sizeof(double));
+    double *a2x = double_malloc_check(num_evals * sizeof(double));
+    double *a3x = double_malloc_check(num_evals * sizeof(double));
 
-    double sop_num[num_evals];
+    double *sop_num = double_malloc_check(num_evals * sizeof(double));
     for (int i = 0; i < num_evals; i++)
     {
         sop_num[i] = i * dp;
@@ -741,12 +696,11 @@ int rv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z,
     free(a2x);
     free(a3x);
     free(s_of_p);
+    free(sop_num);
 
     int size_p_of_s = half_ls / 2;
 
-    double *p_of_s;
-    p_of_s = double_malloc_check(size_p_of_s * sizeof(double));
-
+    double *p_of_s = double_malloc_check(size_p_of_s * sizeof(double));
     for (int i = 0; i < size_p_of_s; i++)
     {
         p_of_s[i] = p_of_s_half[2 * i];
@@ -756,12 +710,11 @@ int rv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z,
     double *k; /* k is the curvature along the curve */
     k = double_malloc_check(half_ls * sizeof(double));
 
-    double *Cspx, *Cspy, *Cspz;
-
     /* Csp is C(s(p)) = [Cx(p(s)) Cy(p(s)) Cz(p(s))]  */
-    Cspx = double_malloc_check(length_of_s * sizeof(double));
-    Cspy = double_malloc_check(length_of_s * sizeof(double));
-    Cspz = double_malloc_check(length_of_s * sizeof(double));
+
+    double *Cspx = double_malloc_check(length_of_s * sizeof(double));
+    double *Cspy = double_malloc_check(length_of_s * sizeof(double));
+    double *Cspz = double_malloc_check(length_of_s * sizeof(double));
 
     for (int i = 0; i < length_of_s; i++)
     {
@@ -770,19 +723,15 @@ int rv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z,
         Cspz[i] = seval(Lp, p_of_s[i], p, z, c1z, c2z, c3z, last);
     }
 
-    double *Csp1x, *Csp2x, *Csp3x,
-        *Csp1y, *Csp2y, *Csp3y,
-        *Csp1z, *Csp2z, *Csp3z; /* spline coefficients */
-
-    Csp1x = double_malloc_check(length_of_s * sizeof(double));
-    Csp2x = double_malloc_check(length_of_s * sizeof(double));
-    Csp3x = double_malloc_check(length_of_s * sizeof(double));
-    Csp1y = double_malloc_check(length_of_s * sizeof(double));
-    Csp2y = double_malloc_check(length_of_s * sizeof(double));
-    Csp3y = double_malloc_check(length_of_s * sizeof(double));
-    Csp1z = double_malloc_check(length_of_s * sizeof(double));
-    Csp2z = double_malloc_check(length_of_s * sizeof(double));
-    Csp3z = double_malloc_check(length_of_s * sizeof(double));
+    double *Csp1x = double_malloc_check(length_of_s * sizeof(double));
+    double *Csp2x = double_malloc_check(length_of_s * sizeof(double));
+    double *Csp3x = double_malloc_check(length_of_s * sizeof(double));
+    double *Csp1y = double_malloc_check(length_of_s * sizeof(double));
+    double *Csp2y = double_malloc_check(length_of_s * sizeof(double));
+    double *Csp3y = double_malloc_check(length_of_s * sizeof(double));
+    double *Csp1z = double_malloc_check(length_of_s * sizeof(double));
+    double *Csp2z = double_malloc_check(length_of_s * sizeof(double));
+    double *Csp3z = double_malloc_check(length_of_s * sizeof(double));
 
     /* interpolation for C(s(p)) */
     spline(length_of_s, 0, 0, 1, 1, s, Cspx, Csp1x, Csp2x, Csp3x, iflag);
@@ -793,17 +742,17 @@ int rv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z,
     free(Cspy);
     free(Cspz);
 
-    double *xpp, *ypp, *zpp; /* xpp, ypp, zpp are d^2/ds^2
-                                (second derivative in s parameterization) */
+    /* xpp, ypp, zpp are d^2/ds^2 (second derivative in s parameterization) */
 
-    xpp = double_malloc_check(half_ls * sizeof(double));
-    ypp = double_malloc_check(half_ls * sizeof(double));
-    zpp = double_malloc_check(half_ls * sizeof(double));
+    double *xpp = double_malloc_check(half_ls * sizeof(double));
+    double *ypp = double_malloc_check(half_ls * sizeof(double));
+    double *zpp = double_malloc_check(half_ls * sizeof(double));
 
-    double *xp, *yp, *zp; /* d/ds - first derivative in s parameterization */
-    xp = double_malloc_check(half_ls * sizeof(double));
-    yp = double_malloc_check(half_ls * sizeof(double));
-    zp = double_malloc_check(half_ls * sizeof(double));
+    /* d/ds - first derivative in s parameterization */
+
+    double *xp = double_malloc_check(half_ls * sizeof(double));
+    double *yp = double_malloc_check(half_ls * sizeof(double));
+    double *zp = double_malloc_check(half_ls * sizeof(double));
 
     /* Computing the curvature along the curve */
     for (int i = 0; i < half_ls; i++)
@@ -847,13 +796,11 @@ int rv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z,
     free(Csp3z);
 
     /* Compute the geometry dependant constraints */
-    double *sdot1, *sdot2, *sdot3;
-    sdot1 = double_malloc_check(half_ls * sizeof(double));
-    sdot2 = double_malloc_check(half_ls * sizeof(double));
-    sdot3 = double_malloc_check(half_ls * sizeof(double));
 
-    double *sdot;
-    sdot = double_malloc_check(half_ls * sizeof(double));
+    double *sdot1 = double_malloc_check(half_ls * sizeof(double));
+    double *sdot2 = double_malloc_check(half_ls * sizeof(double));
+    double *sdot3 = double_malloc_check(half_ls * sizeof(double));
+    double *sdot = double_malloc_check(half_ls * sizeof(double));
 
     for (int i = 0; i < half_ls; i++)
     {
@@ -878,20 +825,19 @@ int rv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z,
 
     /* Extend k, xp, yp, zp, xpp, ypp, zpp for RK4 end points */
     int size_k2 = half_ls + 2;
-    double *k2;
-    k2 = double_malloc_check(size_k2 * sizeof(double));
+    double *k2 = double_malloc_check(size_k2 * sizeof(double));
 
     for (int i = 0; i < half_ls; i++)
     {
         k2[i] = k[i];
     }
-    double *xpp2, *ypp2, *zpp2, *xp2, *yp2, *zp2;
-    xpp2 = double_malloc_check(size_k2 * sizeof(double));
-    ypp2 = double_malloc_check(size_k2 * sizeof(double));
-    zpp2 = double_malloc_check(size_k2 * sizeof(double));
-    xp2 = double_malloc_check(size_k2 * sizeof(double));
-    yp2 = double_malloc_check(size_k2 * sizeof(double));
-    zp2 = double_malloc_check(size_k2 * sizeof(double));
+
+    double *xpp2 = double_malloc_check(size_k2 * sizeof(double));
+    double *ypp2 = double_malloc_check(size_k2 * sizeof(double));
+    double *zpp2 = double_malloc_check(size_k2 * sizeof(double));
+    double *xp2 = double_malloc_check(size_k2 * sizeof(double));
+    double *yp2 = double_malloc_check(size_k2 * sizeof(double));
+    double *zp2 = double_malloc_check(size_k2 * sizeof(double));
 
     for (int i = 0; i < half_ls; i++)
     {
@@ -933,11 +879,8 @@ int rv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z,
 
     /* Solving the ODE */
 
-    double *sta; /* forward solution */
-    sta = double_malloc_check(length_of_s * sizeof(double));
-
-    double *stb; /* backward solution */
-    stb = double_malloc_check(length_of_s * sizeof(double));
+    double *sta = double_malloc_check(length_of_s * sizeof(double)); /* forward solution */
+    double *stb = double_malloc_check(length_of_s * sizeof(double)); /* backward solution */
 
     /* Forward solution  */
     /* Initial cond.  */
@@ -1073,9 +1016,8 @@ int rv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z,
     free(ypp2);
     free(zpp2);
 
-    double *st_of_s, *st_ds_i;
-    st_of_s = double_malloc_check(length_of_s * sizeof(double));
-    st_ds_i = double_malloc_check(length_of_s * sizeof(double));
+    double *st_of_s = double_malloc_check(length_of_s * sizeof(double));
+    double *st_ds_i = double_malloc_check(length_of_s * sizeof(double));
 
     for (int i = 0; i < length_of_s; i++)
     {
@@ -1112,20 +1054,19 @@ int rv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z,
     /* size of the interpolated trajectory  */
     int l_t = (int)floor(t_of_s[length_of_s - 1] / dt);
 
-    double t[l_t];
+    double *t = double_malloc_check(l_t * sizeof(double));
     for (int i = 0; i < l_t; i++)
     {
         t[i] = i * dt; /* time array  */
     }
 
-    double *t1x, *t2x, *t3x; /* coefficient arrays for spline interpolation
-                                of t(s) to get s(t)  */
-    t1x = double_malloc_check(length_of_s * sizeof(double));
-    t2x = double_malloc_check(length_of_s * sizeof(double));
-    t3x = double_malloc_check(length_of_s * sizeof(double));
+    /* coefficient arrays for spline interpolation of t(s) to get s(t)  */
 
-    double *s_of_t;
-    s_of_t = double_malloc_check(l_t * sizeof(double));
+    double *t1x = double_malloc_check(length_of_s * sizeof(double));
+    double *t2x = double_malloc_check(length_of_s * sizeof(double));
+    double *t3x = double_malloc_check(length_of_s * sizeof(double));
+
+    double *s_of_t = double_malloc_check(l_t * sizeof(double));
     spline(length_of_s, 0, 0, 1, 1, t_of_s, s, t1x, t2x, t3x, iflag);
 
     for (int i = 0; i < l_t; i++)
@@ -1136,18 +1077,17 @@ int rv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z,
     free(t2x);
     free(t3x);
     free(t_of_s);
+    free(t);
 
-    double *p1x, *p2x, *p3x; /* coefficient arrays for spline interpolation
-                                of p(s) with s(t) to get p(s(t)) = p(t) */
+    /* coefficient arrays for spline interpolation of p(s) with s(t) to get p(s(t)) = p(t) */
 
-    p1x = double_malloc_check(length_of_s * sizeof(double));
-    p2x = double_malloc_check(length_of_s * sizeof(double));
-    p3x = double_malloc_check(length_of_s * sizeof(double));
+    double *p1x = double_malloc_check(length_of_s * sizeof(double));
+    double *p2x = double_malloc_check(length_of_s * sizeof(double));
+    double *p3x = double_malloc_check(length_of_s * sizeof(double));
 
     spline(length_of_s, 0, 0, 1, 1, s, p_of_s, p1x, p2x, p3x, iflag);
 
-    double *p_of_t;
-    p_of_t = double_malloc_check(l_t * sizeof(double));
+    double *p_of_t = double_malloc_check(l_t * sizeof(double));
 
     for (int i = 0; i < l_t; i++)
     {
@@ -1174,6 +1114,7 @@ int rv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z,
         (*Cy)[i] = seval(Lp, p_of_t[i], p, y, c1y, c2y, c3y, last);
         (*Cz)[i] = seval(Lp, p_of_t[i], p, z, c1z, c2z, c3z, last);
     }
+    free(p);
     free(p_of_t);
 
     free(c1x);
