@@ -7,7 +7,7 @@
 #include <sys/types.h>
 
 #include "spline.h"
-#include "mtg.h"
+#include "mtg_c.h"
 
 double *double_malloc_check(int L)
 {

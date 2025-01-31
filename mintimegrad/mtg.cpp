@@ -17,7 +17,7 @@ minTimeGradientRV: Computes the rotationally variant solution
 
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
-#include "mtg.h"
+#include "mtg_c.h"
 
 namespace py = pybind11;
 

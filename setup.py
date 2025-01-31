@@ -17,7 +17,7 @@ base_path = os.path.dirname(__file__)
 ext_modules = [
     Pybind11Extension(
         "mintimegrad",
-        ["mintimegrad/mtg.cpp"],
+        ["mintimegrad/mtg.cpp", "mintimegrad/mtg_c.c", "mintimegrad/spline.c"],
     ),
 ]
 
@@ -34,14 +34,12 @@ setuptools.setup(
         "Bug Tracker": "https://github.com/kejang/mintimegrad/issues",
     },
     classifiers=[
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
         "Operating System :: POSIX :: Linux",
     ],
     package_dir={"": "."},
     packages=setuptools.find_packages(where="."),
-    python_requires=">=3.7",
+    python_requires=">=3.10",
     install_requires=[
         "numpy >= 1.17.3",
         "pybind11 >=2.6.0",

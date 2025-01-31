@@ -1,5 +1,9 @@
-#ifndef MTG_H
-#define MTG_H
+#ifndef MTG_C_H
+#define MTG_C_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * @brief Generates a rotationally invariant k-space trajectory.
@@ -45,4 +49,8 @@ int riv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z
 int rv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z, int Lp, double g0, double gfin, double gmax,
          double smax, double T, double ds);
 
-#endif /* MTG_H */
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* MTG_C_H */
