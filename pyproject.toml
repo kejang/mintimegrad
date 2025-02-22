@@ -4,5 +4,26 @@ requires = [
     "wheel",
     "pybind11>=2.8.0",
 ]
-
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "mintimegrad"
+version = "0.0.6"
+description = "Python Wrapper of Miki Lustig's tOptGrad"
+authors = [
+    { name = "Kwang Eun Jang", email = "kejang@stanford.edu" }
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy >= 1.17.3",
+    "pybind11 >=2.6.0"
+]
+classifiers = [
+    "Programming Language :: Python :: 3.10",
+    "Operating System :: POSIX :: Linux"
+]
+
+[project.urls]
+Homepage = "https://github.com/kejang/mintimegrad"
+Issues = "https://github.com/kejang/mintimegrad/issues"
