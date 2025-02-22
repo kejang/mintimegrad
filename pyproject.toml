@@ -8,7 +8,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mintimegrad"
-version = "0.0.6"
+version = "0.0.7"
 description = "Python Wrapper of Miki Lustig's tOptGrad"
 authors = [
     { name = "Kwang Eun Jang", email = "kejang@stanford.edu" }

@@ -14,7 +14,7 @@ package_name = "mintimegrad"
 try:
     pkg_version = version(package_name)
 except Exception:
-    pkg_version = "0.0.6"
+    pkg_version = "0.0.7"
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
