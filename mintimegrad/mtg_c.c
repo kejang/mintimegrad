@@ -22,7 +22,7 @@ double *double_malloc_check(int L)
 }
 
 double sdotdot(double xpp, double ypp, double zpp, double xp, double yp,
-               double zp, double st, double smax)
+               double zp, double st, double smax, double gam)
 {
     /* Computes maximum possible value for sdotdot, the second time derivative
      * of s, the arc-length.
@@ -32,13 +32,12 @@ double sdotdot(double xpp, double ypp, double zpp, double xp, double yp,
      *
      * xpp, ypp, and zpp are the second derivatives.
      */
-    double gamma = 4.257;
     double sx, sy, sz; /* constraints for sdotdot in x, y, and z directions */
 
     /* maximum sdotdot will be limited by the smallest of these */
-    sx = (-xpp * st * st + gamma * smax) / xp;
-    sy = (-ypp * st * st + gamma * smax) / yp;
-    sz = (-zpp * st * st + gamma * smax) / zp;
+    sx = (-xpp * st * st + gam * smax) / xp;
+    sy = (-ypp * st * st + gam * smax) / yp;
+    sz = (-zpp * st * st + gam * smax) / zp;
     double rtn = sx;
     if (sy < rtn)
     {
@@ -51,46 +50,45 @@ double sdotdot(double xpp, double ypp, double zpp, double xp, double yp,
     return rtn;
 }
 
-double beta(double k, double st, double smax)
+double beta(double k, double st, double smax, double gam)
 {
-    /* calculates sqrt (gamma^2 * smax^2 - k^2 * st^4) used in RK4 method
+    /* calculates sqrt (gam^2 * smax^2 - k^2 * st^4) used in RK4 method
      * for rotationally invariant ODE solver.
      */
-    double gamma = 4.257;
-    return sqrt(sqrt((gamma * gamma * smax * smax - k * k * st * st * st * st) * (gamma * gamma * smax * smax - k * k * st * st * st * st)));
+    return sqrt(sqrt((gam * gam * smax * smax - k * k * st * st * st * st) * (gam * gam * smax * smax - k * k * st * st * st * st)));
 }
 
-double RungeKutte_riv(double ds, double st, double k[], double smax)
+double RungeKutte_riv(double ds, double st, double k[], double smax, double gam)
 {
     /* Solves ODE for rotationally invariant solution using Runge-Kutte */
-    double k1 = ds * (1 / st) * beta(k[0], st, smax);
-    double k2 = ds * 1 / (st + k1 / 2) * beta(k[1], st + k1 / 2, smax);
-    double k3 = ds * 1 / (st + k2 / 2) * beta(k[1], st + k2 / 2, smax);
-    double k4 = ds * 1 / (st + k3 / 2) * beta(k[2], st + k3 / 2, smax);
+    double k1 = ds * (1 / st) * beta(k[0], st, smax, gam);
+    double k2 = ds * 1 / (st + k1 / 2) * beta(k[1], st + k1 / 2, smax, gam);
+    double k3 = ds * 1 / (st + k2 / 2) * beta(k[1], st + k2 / 2, smax, gam);
+    double k4 = ds * 1 / (st + k3 / 2) * beta(k[2], st + k3 / 2, smax, gam);
     double rtn = k1 / 6 + k2 / 3 + k3 / 3 + k4 / 6;
     return rtn;
 }
 
 double RungeKutte_rv(double ds, double st, double xpp[], double ypp[],
                      double zpp[], double xp[], double yp[], double zp[],
-                     double smax)
+                     double smax, double gam)
 {
     /*  Solves ODE for rotationally variant solution using Runge-Kutte */
     double k1, k2, k3, k4;
-    k1 = ds * (1 / st) * sdotdot(xpp[0], ypp[0], zpp[0], xp[0], yp[0], zp[0], st, smax);
+    k1 = ds * (1 / st) * sdotdot(xpp[0], ypp[0], zpp[0], xp[0], yp[0], zp[0], st, smax, gam);
 
-    k2 = ds * (1 / (st + k1 / 2)) * sdotdot(xpp[1], ypp[1], zpp[1], xp[1], yp[1], zp[1], st + k1 / 2, smax);
+    k2 = ds * (1 / (st + k1 / 2)) * sdotdot(xpp[1], ypp[1], zpp[1], xp[1], yp[1], zp[1], st + k1 / 2, smax, gam);
 
-    k3 = ds * (1 / (st + k2 / 2)) * sdotdot(xpp[1], ypp[1], zpp[1], xp[1], yp[1], zp[1], st + k2 / 2, smax);
+    k3 = ds * (1 / (st + k2 / 2)) * sdotdot(xpp[1], ypp[1], zpp[1], xp[1], yp[1], zp[1], st + k2 / 2, smax, gam);
 
-    k4 = ds * (1 / (st + k3 / 2)) * sdotdot(xpp[2], ypp[2], zpp[2], xp[2], yp[2], zp[2], st + k3 / 2, smax);
+    k4 = ds * (1 / (st + k3 / 2)) * sdotdot(xpp[2], ypp[2], zpp[2], xp[2], yp[2], zp[2], st + k3 / 2, smax, gam);
 
     double rtn = k1 / 6 + k2 / 3 + k3 / 3 + k4 / 6;
     return rtn;
 }
 
 int riv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z, int Lp, double g0, double gfin, double gmax,
-          double smax, double T, double ds)
+          double smax, double dt, double gam, double ds)
 {
     /* iflag used in spline method to signal error */
 
@@ -105,9 +103,6 @@ int riv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z
     {
         p[i] = i;
     }
-
-    double dt = T;
-    double gamma = 4.257;
 
     /* Interpolation of curve for gradient accuracy, using cubic spline
        interpolation */
@@ -183,7 +178,7 @@ int riv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z
     double L = s_of_p[num_evals - 1];
 
     /* decide ds and compute st for the first point */
-    double stt0 = gamma * smax;   /* always assumes first point is max slew */
+    double stt0 = gam * smax;   /* always assumes first point is max slew */
     double st0 = (stt0 * dt) / 2; /* start at half the gradient for accuracy
                                      close to g=0 */
     double s0 = st0 * dt;
@@ -320,12 +315,12 @@ int riv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z
 
     /* Calculating the upper bound for the time parametrization */
     /* sdot (which is a non scaled max gradient constaint) as a function of s. */
-    /* sdot is the minimum of gamma*gmax and sqrt(gamma*gmax / k) */
+    /* sdot is the minimum of gam*gmax and sqrt(gam*gmax / k) */
 
     for (int i = 0; i < half_ls; i++)
     {
-        sdot1[i] = gamma * gmax;
-        sdot2[i] = sqrt((gamma * smax) / (fabs(k[i] + (DBL_EPSILON))));
+        sdot1[i] = gam * gmax;
+        sdot2[i] = sqrt((gam * smax) / (fabs(k[i] + (DBL_EPSILON))));
         if (sdot1[i] < sdot2[i])
         {
             sdot[i] = sdot1[i];
@@ -350,8 +345,8 @@ int riv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z
     k2[size_k2 - 2] = k2[size_k2 - 3];
     k2[size_k2 - 1] = k2[size_k2 - 3];
 
-    double g0gamma = g0 * gamma + st0;
-    double gammagmax = gamma * gmax;
+    double g0gamma = g0 * gam + st0;
+    double gammagmax = gam * gmax;
 
     if (g0gamma < gammagmax)
     {
@@ -371,7 +366,7 @@ int riv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z
         k_rk[1] = k2[2 * i - 1];
         k_rk[2] = k2[2 * i];
 
-        double dstds = RungeKutte_riv(ds, sta[i - 1], k_rk, smax);
+        double dstds = RungeKutte_riv(ds, sta[i - 1], k_rk, smax, gam);
         double tmpst = sta[i - 1] + dstds;
         if (sdot[2 * i + 1] < tmpst)
         {
@@ -394,18 +389,18 @@ int riv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z
     }
     else
     {
-        if (gfin * gamma > st0)
+        if (gfin * gam > st0)
         {
-            max = gfin * gamma;
+            max = gfin * gam;
         }
         else
         {
             max = st0;
         }
 
-        if (gamma * gmax < max)
+        if (gam * gmax < max)
         {
-            stb[length_of_s - 1] = gamma * gmax;
+            stb[length_of_s - 1] = gam * gmax;
         }
         else
         {
@@ -420,7 +415,7 @@ int riv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z
         k_rk[1] = k[2 * i + 1];
         k_rk[2] = k[2 * i];
 
-        double dstds = RungeKutte_riv(ds, stb[i + 1], k_rk, smax);
+        double dstds = RungeKutte_riv(ds, stb[i + 1], k_rk, smax, gam);
         double tmpst = stb[i + 1] + dstds;
 
         if (sdot[2 * i] < tmpst)
@@ -552,7 +547,7 @@ int riv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z
 }
 
 int rv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z, int Lp, double g0, double gfin, double gmax,
-         double smax, double T, double ds)
+         double smax, double dt, double gam, double ds)
 {
     /* iflag used in spline method to signal error */
 
@@ -567,9 +562,6 @@ int rv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z,
     {
         p[i] = i;
     }
-
-    double dt = T;
-    double gamma = 4.257;
 
     /* Interpolation of curve in p-parameterization for gradient accuracy,
        using cubic spline interpolation */
@@ -646,7 +638,7 @@ int rv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z,
     double L = s_of_p[num_evals - 1];
 
     /* decide ds and compute st for the first point */
-    double stt0 = gamma * smax;   /* always assumes first point is max slew */
+    double stt0 = gam * smax;   /* always assumes first point is max slew */
     double st0 = (stt0 * dt) / 2; /* start at half the gradient for accuracy
                                      close to g=0 */
     double s0 = st0 * dt;
@@ -805,9 +797,9 @@ int rv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z,
 
     for (int i = 0; i < half_ls; i++)
     {
-        sdot1[i] = gamma * gmax / xp[i];
-        sdot2[i] = gamma * gmax / yp[i];
-        sdot3[i] = gamma * gmax / zp[i];
+        sdot1[i] = gam * gmax / xp[i];
+        sdot2[i] = gam * gmax / yp[i];
+        sdot3[i] = gam * gmax / zp[i];
         sdot[i] = sdot1[i];
 
         if (sdot2[i] < sdot[i])
@@ -885,8 +877,8 @@ int rv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z,
 
     /* Forward solution  */
     /* Initial cond.  */
-    double g0gamma = g0 * gamma + st0;
-    double gammagmax = gamma * gmax;
+    double g0gamma = g0 * gam + st0;
+    double gammagmax = gam * gmax;
     if (g0gamma < gammagmax)
     {
         sta[0] = g0gamma;
@@ -925,7 +917,7 @@ int rv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z,
         zp_rk[2] = zp2[2 * i];
 
         double dstds = RungeKutte_rv(ds, sta[i - 1], xpp_rk, ypp_rk, zpp_rk,
-                                     xp_rk, yp_rk, zp_rk, smax);
+                                     xp_rk, yp_rk, zp_rk, smax, gam);
 
         double tmpst = sta[i - 1] + dstds;
         if (sdot[2 * i] < tmpst)
@@ -947,18 +939,18 @@ int rv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z,
     else
     {
         double max;
-        if (gfin * gamma > st0)
+        if (gfin * gam > st0)
         {
-            max = gfin * gamma;
+            max = gfin * gam;
         }
         else
         {
             max = st0;
         }
 
-        if (gamma * gmax < max)
+        if (gam * gmax < max)
         {
-            stb[length_of_s - 1] = gamma * gmax;
+            stb[length_of_s - 1] = gam * gmax;
         }
         else
         {
@@ -994,7 +986,7 @@ int rv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z,
         zp_rk[2] = zp2[2 * i];
 
         double dstds = RungeKutte_rv(ds, stb[i + 1], xpp_rk, ypp_rk, zpp_rk,
-                                     xp_rk, yp_rk, zp_rk, smax);
+                                     xp_rk, yp_rk, zp_rk, smax, gam);
 
         double tmpst = stb[i + 1] + dstds;
 
@@ -1103,7 +1095,7 @@ int rv_c(double **Cx, double **Cy, double **Cz, double *x, double *y, double *z,
     free(p3x);
     free(s_of_t);
 
-    /*  Reparameterized curve C, sampled at T */
+    /*  Reparameterized curve C, sampled at dt */
 
     *Cx = double_malloc_check(l_t * sizeof(double));
     *Cy = double_malloc_check(l_t * sizeof(double));
